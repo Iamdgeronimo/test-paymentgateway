@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>ServerLess Pay</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel='stylesheet' href="/assets/css/index.css">
+    <link rel="stylesheet" type="text/css" href="https://checkout.paymentspring.com/assets/application.css">
+</head>
+
+<body>
+
+    <div class='container-fluid page'>
+
+        <div class='row'>
+            <div class='col-sm-10 col-sm-10 col-md-8 col-lg-4 content'>
+                <div class="card container-fluid">
+                    <div class='upper'>
+                        <img class="card-img-top" src="/assets/donate.png" alt="Donate">
+                        <div class="card-body">
+                            <h4 class="card-title text-center">The Serverless Club</h4>
+                            <p class="text-center">
+                                Donate to The Serverless Club. Any amount is greatly appreciated
+                            </p>
+                            <div>
+                                <button class='btn btn-lg btn-primary' id='donate'>Make Donation</button>
+                            </div>
+
+                        </div>
+                        <div class='donation-form' style='display: none'>
+                            <form action="" class="form">
+                                <div class='form-group input-group'>
+                                    <input class="form-control" id="amount" placeholder="amount$(format: 180.00)" type='number' step='0.1'>
+                                </div>
+
+                                <div class='form-group input-group'>
+                                    <input class="form-control" id="card_number" placeholder="card number" required
+                                        type="text">
+                                </div>
+
+                                <div class="form-group input-group">
+                                    <input class="form-control" id="name" placeholder="name" type="text" required>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col form-group input-group">
+                                        <input class="form-control" id="expiry" placeholder="mm/yyyy" type='text'
+                                            required>
+                                    </div>
+                                    <div class="col form-group input-group">
+                                        <input class="form-control" id="csc" placeholder="csc" type='text' required>
+                                    </div>
+                                </div>
+
+                                <div class="form-group input-group">
+                                    <input class="form-control" id="email" placeholder="email" type="email" required>
+                                </div>
+                                <div>
+                                    <input class="btn btn-info btn-block btn-lg" id="submit" name="submit" value="Donate"
+                                        type='submit'>
+                                </div><br>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--Bootstrap-->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+            integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+            crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+            crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+            crossorigin="anonymous"></script>
+        <script type="text/javascript" src="https://checkout.paymentspring.com/js/paymentspring-tokenizer.js">
+        </script>
+        <script>
+            const publicKey = "test_e92e98b99d0b7473be9b919c8481c6350f7be9baf0a61ec35cd9b08d29";
+            var donate = document.querySelector("#donate");
+            var donation_form = document.querySelector(".donation-form");
+            var form = document.querySelector('.form');
+            var token;
+
+            function call_response(response) {
+                var xhr = new XMLHttpRequest();
+                //xhr.withCredentials = true;
+
+                xhr.addEventListener("readystatechange", function () {
+                    if (this.readyState === 4) {
+                        console.log(this.responseText);
+                    }
+                });
+
+                xhr.open("POST", "https://serverlesspay.azurewebsites.net/api/charge");
+                xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                xhr.setRequestHeader("cache-control", "no-cache");  
+
+                let fff = response;
+                var ddd = {
+                    'id': fff.id,
+                    'charge': form.amount.value,
+                    'email': form.email.value
+                } 
+
+                xhr.send(JSON.stringify(ddd)); 
+                console.log(JSON.stringify(ddd));                
+                console.log('Sent');
+                form.reset();
+            }
+
+            donate.addEventListener('click', ev => {
+                donation_form.style.display = donation_form.style.display === 'none' ? 'block' : 'none';
+            });
+
+            form.onsubmit = (e) => {
+                e.preventDefault();
+                var paymentData = {
+
+                    "card_owner_name": form.name.value,
+                    "card_number": form.card_number.value,
+                    "card_exp_month": form.expiry.value.split('/')[0],
+                    "card_exp_year": form.expiry.value.split('/')[1],
+                    "csc": form.csc.value
+                }
+
+                token = paymentspring.generateToken(publicKey, paymentData, call_response);
+
+            }
+        </script> 
+    </div>
+</body>
+
+</html>
